@@ -188,11 +188,16 @@ app.post('/api/send-otp', async (req, res) => {
         to: email || process.env.SMTP_USER,
         subject: 'OTP for Admin - panel authentication',
         html: `
-            <div style="font-family: Arial, sans-serif; color: #333;">
-                <p>Hello Boss,</p>
-                <p>To authenticate, please use this OTP:</p>
-                <h1 style="font-size: 32px; font-weight: bold;">${otp_code}</h1>
-                <p>Valid for 5 minutes.</p>
+            <div style="font-family: 'Brush Script MT', cursive, Arial, sans-serif; color: #333; padding: 20px;">
+                <p style="font-size: 18px;">Hello Boss,</p>
+                <p style="font-size: 18px;">Analytica is here...</p>
+                <br/>
+                <p style="font-size: 16px; font-family: Arial, sans-serif;">To authenticate, please use the following One Time Password (OTP):</p>
+                <h1 style="font-size: 48px; font-weight: bold; margin: 20px 0; font-family: 'Brush Script MT', cursive;">${otp_code}</h1>
+                <p style="font-size: 14px; font-family: Arial, sans-serif;">This OTP will be valid for 5 minutes.</p>
+                <p style="font-size: 14px; font-family: Arial, sans-serif;">Do not share this OTP with anyone.</p>
+                <br/>
+                <p style="font-size: 18px;">Thanks for Verifying!</p>
             </div>
         `
     };
@@ -240,7 +245,7 @@ app.post('/api/verify-pin', (req, res) => {
     const { pin } = req.body;
     // Securely check PIN on server. 
     // Use env var or default to the user's specified PIN if env is missing.
-    const CORRECT_PIN = process.env.ADMIN_PIN || "842091";
+    const CORRECT_PIN = process.env.ADMIN_PIN;
 
     if (pin === CORRECT_PIN) {
         return res.json({ success: true });
