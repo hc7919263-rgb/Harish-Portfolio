@@ -172,11 +172,15 @@ app.post('/api/send-otp', async (req, res) => {
     }
 
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // Use SSL
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
-        }
+        },
+        // Increase timeout to 10 seconds
+        connectionTimeout: 10000
     });
 
     const mailOptions = {
@@ -197,17 +201,17 @@ app.post('/api/send-otp', async (req, res) => {
         console.log("Attempting to send email...");
         await transporter.verify(); // Verify connection first
         console.log("SMTP Connection Verified");
-        
+
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully");
         res.json({ success: true, message: 'Email sent' });
     } catch (error) {
         console.error("Detailed Email Error:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Failed to send email', 
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send email',
             error: error.message,
-            code: error.code 
+            code: error.code
         });
     }
 });
