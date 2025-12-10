@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Portfolio of Harish Chavan - Business Analytics Student and No-code UX Developer. Explore my creations, foundation, and skills." />
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://aistudiocdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.emailjs.com https://www.google-analytics.com;" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://harish-chavan-portfolio.vercel.app/" />
+  <meta property="og:title" content="Harish Chavan Portfolio" />
+  <meta property="og:description" content="Business Analytics Student and No-code UX Developer." />
+  <meta property="og:image" content="https://harish-chavan-portfolio.vercel.app/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://harish-chavan-portfolio.vercel.app/" />
+  <meta property="twitter:title" content="Harish Chavan Portfolio" />
+  <meta property="twitter:description" content="Business Analytics Student and No-code UX Developer." />
+  <meta property="twitter:image" content="https://harish-chavan-portfolio.vercel.app/og-image.jpg" />
+
+  <meta name="keywords"
+    content="Harish Chavan, Business Analytics, No-code UX Developer, Portfolio, Data Analysis, SQL, Power BI, Python, Web Development, Sandip University" />
+
+  <title>Harish Chavan - Business Analytics & UX Portfolio</title>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Harish Chavan",
+      "url": "https://harish-chavan-portfolio.vercel.app/",
+      "image": "https://harish-chavan-portfolio.vercel.app/og-image.jpg",
+      "sameAs": [
+        "https://www.linkedin.com/in/harish-chavan-a4248738b",
+        "https://github.com/Harry-0402"
+      ],
+      "jobTitle": "Business Analytics Student & No-code UX Developer",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Sandip University"
+      },
+      "knowsAbout": ["Business Analytics", "Data Analysis", "SQL", "Python", "Power BI", "No-code Development"]
+    }
+  </script>
+
+  <!-- Google Analytics (Placeholder) -->
+  <!-- 
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script> 
+  -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @keyframes scroll-up {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-50%);
+      }
+    }
+
+    .animate-scroll-up {
+      animation: scroll-up 40s linear infinite;
+    }
+
+    @keyframes dance {
+
+      0%,
+      40%,
+      100% {
+        transform: translateY(0);
+      }
+
+      20% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .animate-dance {
+      animation: dance 2s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    @keyframes progress {
+      from {
+        width: 0;
+      }
+    }
+
+    .animate-progress {
+      animation: progress 1.5s ease-out forwards;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes wave {
+
+      0%,
+      100% {
+        transform: rotate(0deg);
+      }
+
+      50% {
+        transform: rotate(15deg);
+      }
+    }
+
+    .animate-wave {
+      animation: wave 2s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.1/client.js",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@0.0.2/dist/browser/index.js"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://harish-chavan-portfolio.vercel.app/sitemap.xml

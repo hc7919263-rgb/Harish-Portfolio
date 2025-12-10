@@ -1,0 +1,330 @@
+{
+  "meta": {
+    "totalVisitors": 12462,
+    "aboutText": "I am currently pursuing business analytics at Sandip University. I work with data to solve business problems, manage information, analyze trends, and turn numbers into clear insights for better decisions.\n\nI also build no-code, fully functional websites, where I design clean and smooth user experiences and build functional tools that support business workflows, dashboards, and automation.\n\nI am looking for opportunities to apply my skills in real projects and grow through hands-on work. I am open to connecting with professionals in the field."
+  },
+  "collaborations": [],
+  "projects": [
+    {
+      "id": "p_superstore",
+      "title": "SuperStore Sales & Profits Analysis",
+      "description": "End-to-end analysis of sales and profit drivers for a retail dataset.",
+      "url": "https://github.com/Harry-0402/P102---SuperStore-Sales-and-Profits-Analysis",
+      "skills": [
+        "Python",
+        "Pandas",
+        "Matplotlib",
+        "Excel"
+      ],
+      "category": "Projects",
+      "status": "complete",
+      "year": 2024,
+      "featured": true
+    },
+    {
+      "id": "p_pandas_handbook",
+      "title": "Pandas Handbook for Business Analytics",
+      "description": "Practical recipes for data cleaning, grouping, and feature engineering with Pandas.",
+      "url": "https://github.com/Harry-0402/HB101---Pandas-Handbook-for-Business-Analytics",
+      "skills": [
+        "Python",
+        "Pandas",
+        "Jupyter"
+      ],
+      "category": "Handbooks",
+      "status": "complete",
+      "year": 2024,
+      "featured": true
+    },
+    {
+      "id": "p_customer_seg",
+      "title": "Customer Segmentation Analysis",
+      "description": "Clustering-based segmentation to create targeted customer groups and action plans.",
+      "url": "https://github.com/Harry-0402",
+      "skills": [
+        "Python",
+        "Scikit-learn",
+        "Pandas"
+      ],
+      "category": "Projects",
+      "status": "coming-soon",
+      "year": 2025,
+      "featured": false
+    },
+    {
+      "id": "p_excel_basics",
+      "title": "Basic Excel Projects for Data Analysis",
+      "description": "Small, practical Excel reports for KPI tracking and quick analysis.",
+      "url": "https://github.com/Harry-0402/P101---Basic-Excel-Projects",
+      "skills": [
+        "Excel"
+      ],
+      "category": "Projects",
+      "status": "complete",
+      "year": 2023
+    }
+  ],
+  "foundation": {
+    "academic": [
+      {
+        "degree": "Master of Business Administration - MBA, Business Analytics",
+        "institution": "Sandip University",
+        "year": "Aug 2025",
+        "description": "Developed a strong foundation in Data Management, Strategic Management, and Managerial Economics. Gained proficiency in Python and Microsoft Power BI for Business Analytics, while honing soft skills in Business Communications and Organizational Behavior."
+      },
+      {
+        "degree": "B.Sc. in Actuarial Science",
+        "institution": "Kavayitri Bahinabai Chaudhari North Maharashtra University (KBCNMU), Jalgaon",
+        "year": "Jan 2022 - May 2025",
+        "description": "Acquired comprehensive knowledge in Statistics and Statistical Data Analysis. Demonstrated expertise in using R and Excel for Exploratory Data Analysis, creating Dashboards, and building Regression Models."
+      },
+      {
+        "degree": "High School Diploma",
+        "institution": "kskw college nashik",
+        "year": "2021 - 2022",
+        "description": "Cultivated essential soft skills including Problem Solving, Adaptability, and Creativity, fostering an innovative mindset for tackling academic and personal challenges."
+      },
+      {
+        "degree": "SSC (Class X)",
+        "institution": "H.C. High School Ranjangaon",
+        "year": "2019 - 2020",
+        "description": "Completed Secondary School Certificate with distinction, achieving a grade of 90.20%."
+      }
+    ],
+    "certifications": [
+      {
+        "title": "The Complete SQL Bootcamp: Go from Zero to Hero",
+        "issuer": "Udemy - Jose Portilla, Pierian Training",
+        "year": "Enrolled",
+        "url": "#"
+      },
+      {
+        "title": "Machine Learning A-Z: AI, Python & R + ChatGPT Prize [2025]",
+        "issuer": "Udemy - Kirill Eremenko, Hadelin de Ponteves, SuperDataScience Team and Ligency ​",
+        "year": "Enrolled",
+        "url": "#"
+      },
+      {
+        "title": "Python for Data Science and Machine Learning Bootcamp",
+        "issuer": "Udemy - Jose Portilla, Pierian Training",
+        "year": "Enrolled",
+        "url": "#"
+      },
+      {
+        "title": "Microsoft Power BI Desktop for Business Intelligence",
+        "issuer": "Udemy - Maven Analytics, Chris Dutton, Aaron Parry",
+        "year": "Enrolled",
+        "url": "#"
+      },
+      {
+        "title": "Exploratory Data Analysis with Python & GenAI",
+        "issuer": "Analytics Vidhya - Jyant Mahara",
+        "year": "Dec 2025",
+        "url": "#",
+        "image": "/assets/eda_certificate.png"
+      }
+    ],
+    "activities": [
+      {
+        "role": "Co-ordinator and Participant",
+        "organization": "Innovation & Incubation Cell, Sandip University",
+        "year": "2025",
+        "description": "Co-ordinated and Participated in Design and Thinking One-day Workshop"
+      },
+      {
+        "role": "Member Imp",
+        "organization": "Business Analytics Club of Sandip University",
+        "year": "2025",
+        "description": "Participating in analytics workshops, case study competitions, and organizing data-driven events."
+      },
+      {
+        "role": "Co-ordinator",
+        "organization": "Alpha Racing Solution - Sonali Dabak, Purva Kelkar",
+        "year": "2025",
+        "description": "Co-ordinated with different teams and Price Distribution for The Nashik Kids Walkathon 2025."
+      }
+    ]
+  },
+  "skills": {
+    "technical": [
+      {
+        "name": "Python",
+        "percentage": 90
+      },
+      {
+        "name": "Data Visualization (Matplotlib/Seaborn)",
+        "percentage": 85
+      },
+      {
+        "name": "SQL",
+        "percentage": 80
+      },
+      {
+        "name": "Excel",
+        "percentage": 95
+      },
+      {
+        "name": "Power BI",
+        "percentage": 75
+      },
+      {
+        "name": "Git & GitHub",
+        "percentage": 80
+      }
+    ],
+    "soft": [
+      {
+        "name": "Problem Solving",
+        "percentage": 95
+      },
+      {
+        "name": "Critical Thinking",
+        "percentage": 90
+      },
+      {
+        "name": "Effective Communication",
+        "percentage": 90
+      },
+      {
+        "name": "Team Collaboration",
+        "percentage": 95
+      },
+      {
+        "name": "Storytelling with Data",
+        "percentage": 85
+      },
+      {
+        "name": "Adaptability",
+        "percentage": 90
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "id": "about_1",
+      "question": "Who is Harish",
+      "answer": "Harish is a Business Analytics student who works on data projects, dashboards, and frontend development. He focuses on clear problem solving and practical analytics.",
+      "category": "About"
+    },
+    {
+      "id": "about_2",
+      "question": "Tell me about him",
+      "answer": "He studies Business Analytics at Sandip University. He builds Python, Power BI, and web projects. He shares his work through handbooks, dashboards, and clean portfolio pages.",
+      "category": "About"
+    },
+    {
+      "id": "skills_1",
+      "question": "What skills does he have",
+      "answer": "He works with Python, Pandas, SQL, Power BI, React, TypeScript, and UI design. He builds dashboards, cleans data, and creates full pages for web apps.",
+      "category": "Skills"
+    },
+    {
+      "id": "skills_2",
+      "question": "What tools does he use",
+      "answer": "Python, Pandas, NumPy, Matplotlib, Scikit-learn, Excel, Power BI, React, TypeScript, Figma, and GitHub.",
+      "category": "Skills"
+    },
+    {
+      "id": "skills_3",
+      "question": "What languages does he know",
+      "answer": "Python, SQL, JavaScript, TypeScript, and basic R.",
+      "category": "Skills"
+    },
+    {
+      "id": "proj_1",
+      "question": "What projects does he have",
+      "answer": "SuperStore Sales Analysis, Pandas Handbook, Basic Excel Projects, and Customer Segmentation. More sections include blogs, case studies, and research work.",
+      "category": "Projects"
+    },
+    {
+      "id": "proj_2",
+      "question": "Explain the SuperStore project",
+      "answer": "It reviews sales and profit data. It uses Python, Pandas, and Matplotlib to create KPIs, find low-profit regions, and highlight product-level patterns.",
+      "category": "Projects"
+    },
+    {
+      "id": "proj_3",
+      "question": "Explain the Pandas Handbook",
+      "answer": "It is a collection of code patterns for business analytics. It teaches cleaning, merging, grouping, and creating insights with Pandas.",
+      "category": "Projects"
+    },
+    {
+      "id": "proj_4",
+      "question": "What is Customer Segmentation",
+      "answer": "It groups customers based on buying behavior using clustering. It helps target the right audience. The project is under progress.",
+      "category": "Projects"
+    },
+    {
+      "id": "proj_15",
+      "question": "Does he have GitHub links",
+      "answer": "Yes. All projects are on GitHub. Example links: SuperStore Analysis, Pandas Handbook, and Excel Projects.",
+      "category": "Projects"
+    },
+    {
+      "id": "cre_1",
+      "question": "What is in Creations",
+      "answer": "Creations holds Projects, Handbooks, Blogs, Case Studies, and Research Papers. Each category explains the purpose and status.",
+      "category": "Creations"
+    },
+    {
+      "id": "cre_2",
+      "question": "What are handbooks",
+      "answer": "Handbooks are small guides that show how to solve analytics tasks with Python or Power BI. They focus on simple examples and clear workflows.",
+      "category": "Creations"
+    },
+    {
+      "id": "cre_3",
+      "question": "What are case studies",
+      "answer": "Case studies show how he solves a business problem using data. They include context, data steps, KPIs, and insights.",
+      "category": "Creations"
+    },
+    {
+      "id": "found_1",
+      "question": "What is the Foundation section",
+      "answer": "Foundation lists his academic timeline, courses, certifications, and activities. It shows how his technical skills developed year by year.",
+      "category": "Foundation"
+    },
+    {
+      "id": "found_2",
+      "question": "What certifications does he have",
+      "answer": "He completed analytics and programming certifications from online platforms and university modules. More details appear under Foundation.",
+      "category": "Foundation"
+    },
+    {
+      "id": "contact_1",
+      "question": "How do I contact him",
+      "answer": "Use the Contact page. Phone: +91 70304 30756. Email: hrchavan0402@gmail.com. GitHub: Harry-0402. LinkedIn: Harish Chavan.",
+      "category": "Contact"
+    },
+    {
+      "id": "contact_6",
+      "question": "How does the contact form work",
+      "answer": "The form uses EmailJS. Your message is sent directly to his email through that service.",
+      "category": "Contact"
+    },
+    {
+      "id": "nav_1",
+      "question": "Show me his projects page",
+      "answer": "Open the Creations page and select Projects. You can check project cards and click GitHub buttons for details.",
+      "category": "Navigation"
+    },
+    {
+      "id": "nav_3",
+      "question": "Where can I find his resume",
+      "answer": "The Home page includes a Resume section with a download button.",
+      "category": "Navigation"
+    },
+    {
+      "id": "collab_1",
+      "question": "Does he take freelance work",
+      "answer": "Yes. He works on dashboards, analytics reports, and small web components.",
+      "category": "Collaboration"
+    },
+    {
+      "id": "features_1",
+      "question": "What can this assistant do",
+      "answer": "It answers questions about Harish, his skills, projects, and pages. It helps you navigate and understand his work.",
+      "category": "Features"
+    }
+  ]
+}
