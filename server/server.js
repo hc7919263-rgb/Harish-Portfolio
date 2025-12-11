@@ -471,7 +471,11 @@ app.post('/api/verify-pin', (req, res) => {
             }
         }
 
-        return res.json({ success: true, registrationToken: token });
+        // Get Passkey Count to inform client UI
+        const data = await readDb();
+        const passkeyCount = (data.adminPasskeys || []).length;
+
+        return res.json({ success: true, registrationToken: token, passkeyCount });
     } else {
         return res.json({ success: false, message: 'Invalid PIN' });
     }
