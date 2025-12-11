@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { chatData, FAQ } from '../utils/chatData';
+export type { FAQ };
 
 // --- Types ---
 export interface Project {

@@ -155,33 +155,42 @@ app.get('/api/download-resume', async (req, res) => {
 
 // --- OTP Email ---
 // --- OTP Email & Verification ---
+
+// --- OTP Email & Verification ---
 let otpStore = new Map(); // Store { email: { code, expires } }
+
+// Global Transporter (Reuse connection pool)
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+    },
+    pool: true, // Enable connection pooling
+    maxConnections: 5,
+    maxMessages: 100,
+    connectionTimeout: 10000
+});
+
+// Verify connection once on startup
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ SMTP Connection Error:", error);
+    } else {
+        console.log("✅ SMTP Server is ready to take our messages");
+    }
+});
 
 app.post('/api/send-otp', async (req, res) => {
     const { email } = req.body;
     console.log("Requesting OTP for:", email || "default admin");
 
-    const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = Date.now() + 5 * 60 * 1000;
     const key = email || 'admin';
-    otpStore.set(key, { code: otp_code, expires });
-
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        console.error("Missing SMTP Credentials in env");
-        return res.status(500).json({ success: false, message: 'Server missing email config' });
-    }
-
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // Use SSL
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-        },
-        // Increase timeout to 10 seconds
-        connectionTimeout: 10000
-    });
+    otpStore.set(key, { code: otpCode, expires });
 
     const mailOptions = {
         from: `"Analytica" <${process.env.SMTP_USER}>`,
@@ -193,7 +202,7 @@ app.post('/api/send-otp', async (req, res) => {
                 <p style="font-size: 18px;">Analytica is here...</p>
                 <br/>
                 <p style="font-size: 16px; font-family: Arial, sans-serif;">To authenticate, please use the following One Time Password (OTP):</p>
-                <h1 style="font-size: 48px; font-weight: bold; margin: 20px 0; font-family: 'Brush Script MT', cursive;">${otp_code}</h1>
+                <h1 style="font-size: 48px; font-weight: bold; margin: 20px 0; font-family: 'Brush Script MT', cursive;">${otpCode}</h1>
                 <p style="font-size: 14px; font-family: Arial, sans-serif;">This OTP will be valid for 5 minutes.</p>
                 <p style="font-size: 14px; font-family: Arial, sans-serif;">Do not share this OTP with anyone.</p>
                 <br/>
@@ -203,10 +212,10 @@ app.post('/api/send-otp', async (req, res) => {
     };
 
     try {
-        console.log("Attempting to send email...");
-        await transporter.verify(); // Verify connection first
-        console.log("SMTP Connection Verified");
-
+        console.log("Sending email...");
+        // Send mail asynchronously - don't block response too long if possible, 
+        // but awaiting guarantees delivery confirmation to client. 
+        // With pooled connection, this should be fast.
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully");
         res.json({ success: true, message: 'Email sent' });
