@@ -162,19 +162,22 @@ let otpStore = new Map(); // Store { email: { code, expires } }
 // Global Transporter (Reuse connection pool)
 // Global Transporter (Reuse connection pool)
 // Global Transporter
-// Switching to Port 587 (STARTTLS) as Port 465 (SSL) appears to be timing out on Render.
+// FIX: Force IPv4 (family: 4) to prevent IPv6 timeouts on cloud networks.
+// Using Port 587 (STARTTLS) which is standard.
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
     },
     tls: {
-        rejectUnauthorized: false // Help prevent self-signed cert errors during handshake
+        rejectUnauthorized: false
     },
-    connectionTimeout: 30000 // 30 seconds
+    family: 4, // <--- Force IPv4
+    connectionTimeout: 60000, // Increase to 60s
+    greetingTimeout: 30000
 });
 
 // Verify connection once on startup
