@@ -450,7 +450,7 @@ app.post('/api/auth/login-verify', async (req, res) => {
     }
 });
 // --- PIN Verification ---
-app.post('/api/verify-pin', (req, res) => {
+app.post('/api/verify-pin', async (req, res) => {
     const { pin } = req.body;
     // Securely check PIN on server. 
     // Use env var or default to the user's specified PIN if env is missing.
