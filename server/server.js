@@ -449,6 +449,51 @@ app.post('/api/auth/login-verify', async (req, res) => {
         res.status(400).json({ success: false, error: 'Verification failed' });
     }
 });
+
+// --- Passkey Management Endpoints ---
+app.get('/api/auth/passkeys', async (req, res) => {
+    try {
+        const data = await readDb();
+        // Return sanitized list (no public keys?) - keeping it simple
+        // Return index as "ID" or just map them
+        const keys = (data.adminPasskeys || []).map((k, i) => ({
+            id: k.id,
+            name: `Passkey Device ${i + 1}`, // Simple naming for now
+            created: k.counter || 0 // Proxy for usage?
+        }));
+        res.json({ success: true, keys });
+    } catch (e) {
+        console.error("List keys error", e);
+        res.status(500).json({ error: "Failed to list keys" });
+    }
+});
+
+app.delete('/api/auth/passkeys', async (req, res) => {
+    const { id, pin } = req.body;
+
+    // 1. Gate with PIN
+    const CORRECT_PIN = process.env.ADMIN_PIN;
+    if (pin !== CORRECT_PIN) {
+        return res.status(401).json({ error: "Invalid PIN" });
+    }
+
+    try {
+        const data = await readDb();
+        if (!data.adminPasskeys) return res.json({ success: true });
+
+        const initialLength = data.adminPasskeys.length;
+        data.adminPasskeys = data.adminPasskeys.filter(k => k.id !== id);
+
+        if (data.adminPasskeys.length !== initialLength) {
+            await writeDb(data);
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error("Delete key error", e);
+        res.status(500).json({ error: "Failed to delete key" });
+    }
+});
 // --- PIN Verification ---
 app.post('/api/verify-pin', async (req, res) => {
     const { pin } = req.body;
