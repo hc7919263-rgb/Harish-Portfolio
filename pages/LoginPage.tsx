@@ -346,14 +346,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
                                         <div className="flex-grow border-t border-gray-700"></div>
                                     </div>
 
-                                    <button
-                                        onClick={handleRegisterPasskey}
-                                        disabled={isLoading}
-                                        className="w-full py-4 rounded-xl font-bold text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                        Register New Device
-                                    </button>
+                                    {!hasKeys ? (
+                                        <button
+                                            onClick={handleRegisterPasskey}
+                                            disabled={isLoading}
+                                            className="w-full py-4 rounded-xl font-bold text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Register New Device
+                                        </button>
+                                    ) : (
+                                        <div className="text-center py-2">
+                                            <p className="text-gray-500 text-xs italic">Registration disabled on login (Keys exist).</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

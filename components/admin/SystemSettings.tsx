@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Search, Save } from 'lucide-react';
+import { Settings, Search, Save, Shield, Plus } from 'lucide-react';
 import { useData } from '../../context/DataContext';
+import { startRegistration } from '@simplewebauthn/browser';
 
 const SystemSettings = () => {
     // @ts-ignore
@@ -9,6 +10,56 @@ const SystemSettings = () => {
     const [seoTitle, setSeoTitle] = useState('');
     const [seoDesc, setSeoDesc] = useState('');
     const [msg, setMsg] = useState('');
+
+    // Passkey State
+    const [isAddingKey, setIsAddingKey] = useState(false);
+    const [pinVal, setPinVal] = useState('');
+
+    const handleAddPasskey = async () => {
+        try {
+            // 1. Verify PIN to get Session Token
+            const res = await fetch('/api/verify-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: pinVal })
+            });
+            const data = await res.json();
+
+            if (!data.success || !data.registrationToken) {
+                setMsg('Error: Invalid PIN');
+                setTimeout(() => setMsg(''), 3000);
+                return;
+            }
+
+            // 2. Start Registration with Token
+            const resp = await fetch('/api/auth/register-challenge', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${data.registrationToken}` }
+            });
+            const options = await resp.json();
+
+            const attResp = await startRegistration(options);
+
+            const verResp = await fetch('/api/auth/register-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(attResp),
+            });
+
+            const verification = await verResp.json();
+            if (verification.success) {
+                setMsg('Success: New Passkey Added!');
+                setIsAddingKey(false);
+                setPinVal('');
+            } else {
+                throw new Error(verification.error);
+            }
+        } catch (e: any) {
+            console.error(e);
+            setMsg('Error: ' + (e.message || 'Registration failed'));
+        }
+        setTimeout(() => setMsg(''), 3000);
+    };
 
     useEffect(() => {
         if (meta) {
@@ -86,6 +137,54 @@ const SystemSettings = () => {
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-black focus:ring-0 transition-all font-medium"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* Security / Passkeys */}
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <Shield className="w-5 h-5" /> Security & Passkeys
+                    </h3>
+
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <h4 className="font-bold text-gray-900">Passkey Devices</h4>
+                                <p className="text-sm text-gray-500">Manage biometric authenticators (TouchID, FaceID).</p>
+                            </div>
+                            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
+                                Active
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setIsAddingKey(true)}
+                            className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" /> Add New Passkey
+                        </button>
+
+                        {/* PIN Prompt for Adding Key */}
+                        {isAddingKey && (
+                            <div className="mt-6 p-4 bg-white rounded-xl border border-gray-200 animate-in slide-in-from-top-2">
+                                <p className="text-sm font-bold text-gray-900 mb-2">Enter PIN to authorize:</p>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="password"
+                                        value={pinVal}
+                                        onChange={(e) => setPinVal(e.target.value)}
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
+                                        placeholder="••••••"
+                                    />
+                                    <button
+                                        onClick={handleAddPasskey}
+                                        className="bg-black text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-800"
+                                    >
+                                        Verify & Add
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
