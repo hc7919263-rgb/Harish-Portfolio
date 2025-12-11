@@ -107,14 +107,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
             const resp = await fetch('/api/auth/login-challenge', { method: 'POST' });
             const data = await resp.json();
 
-            if (!data.options) {
-                // No passkeys exist?
+            // FIX: Server returns options directly, OR { success: false, message: ... } on error
+            if (data.success === false) {
                 setError(data.message || 'No passkeys found. Please Register first.');
                 return;
             }
 
             // 2. Browser Native Prompt
-            const asseResp = await startAuthentication(data.options);
+            // Pass 'data' directly as it contains the options
+            const asseResp = await startAuthentication(data);
 
             // 3. Verify
             const verResp = await fetch('/api/auth/login-verify', {
