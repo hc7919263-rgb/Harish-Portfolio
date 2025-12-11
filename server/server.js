@@ -352,6 +352,17 @@ app.post('/api/auth/login-verify', async (req, res) => {
     const passkey = existingPasskeys.find(key => key.id === body.id);
     if (!passkey) return res.status(400).json({ error: 'Passkey not found' });
 
+    console.log("DEBUG: Login - Passkey Found:", JSON.stringify(passkey, null, 2));
+
+    const authenticatorObj = {
+        credentialID: passkey.id,
+        credentialPublicKey: new Uint8Array(passkey.publicKey.data || passkey.publicKey),
+        counter: (passkey.counter !== undefined && passkey.counter !== null) ? passkey.counter : 0,
+        transports: passkey.transports,
+    };
+
+    console.log("DEBUG: Login - Authenticator Object for Verify:", JSON.stringify(authenticatorObj, (k, v) => k === 'credentialPublicKey' ? '[Uint8Array]' : v, 2));
+
     let verification;
     try {
         verification = await verifyAuthenticationResponse({
@@ -359,12 +370,7 @@ app.post('/api/auth/login-verify', async (req, res) => {
             expectedChallenge: challenge,
             expectedOrigin: origin,
             expectedRPID: [expectedRPID, 'localhost'],
-            authenticator: {
-                credentialID: passkey.id,
-                credentialPublicKey: new Uint8Array(passkey.publicKey.data || passkey.publicKey),
-                counter: passkey.counter || 0,
-                transports: passkey.transports,
-            },
+            authenticator: authenticatorObj,
         });
     } catch (error) {
         console.error("Login Verify Error:", error);
