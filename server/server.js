@@ -338,6 +338,10 @@ app.post('/api/auth/login-verify', async (req, res) => {
     const { body } = req;
     const challenge = challengeStore.get('admin-user');
     const rpID = req.hostname;
+    let expectedRPID = rpID;
+    if (!expectedRPID.includes('localhost') && !expectedRPID.includes('127.0.0.1')) {
+        expectedRPID = 'harish-portfolio-3fqm.onrender.com';
+    }
 
     if (!challenge) return res.status(400).json({ error: 'No Login Challenge found' });
 
@@ -354,11 +358,12 @@ app.post('/api/auth/login-verify', async (req, res) => {
             response: body,
             expectedChallenge: challenge,
             expectedOrigin: origin,
-            expectedRPID: rpID,
+            expectedRPID: [expectedRPID, 'localhost'],
             authenticator: {
                 credentialID: passkey.id,
                 credentialPublicKey: new Uint8Array(passkey.publicKey.data || passkey.publicKey),
-                counter: passkey.counter,
+                counter: passkey.counter || 0,
+                transports: passkey.transports,
             },
         });
     } catch (error) {
