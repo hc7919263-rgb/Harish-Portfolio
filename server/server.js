@@ -180,9 +180,15 @@ app.post('/api/auth/register-challenge', async (req, res) => {
         // For simplicity here, we trust the client has passed Step 1.
 
         // Dynamic RP ID based on request
+        // On Render, req.hostname should be the domain        // Dynamic RP ID based on request
         // On Render, req.hostname should be the domain (if trust proxy is on)
         const rpID = req.hostname;
-        console.log("Registering with RP ID:", rpID);
+        console.log("DEBUG: Registering with RP ID:", rpID);
+        console.log("DEBUG: RP Name:", rpName);
+
+        if (!rpID) {
+            throw new Error("rpID (req.hostname) is undefined or empty");
+        }
 
         const options = await generateRegistrationOptions({
             rpName,
@@ -195,6 +201,12 @@ app.post('/api/auth/register-challenge', async (req, res) => {
                 // authenticatorAttachment: 'cross-platform', 
             },
         });
+
+        console.log("DEBUG: Options generated:", JSON.stringify(options));
+
+        if (!options) {
+            throw new Error("generateRegistrationOptions returned undefined");
+        }
 
         // Store challenge
         challengeStore.set('admin-user-id', options.challenge);
