@@ -358,7 +358,14 @@ app.post('/api/auth/login-verify', async (req, res) => {
 
     // Normalize Public Key
     let pkUint8;
-    if (passkey.publicKey && passkey.publicKey.data) {
+    console.log("DEBUG: Inspecting PK Type:", typeof passkey.publicKey, "Constructor:", passkey.publicKey ? passkey.publicKey.constructor.name : 'Unknown');
+
+    if (passkey.publicKey instanceof Uint8Array) {
+        pkUint8 = passkey.publicKey;
+    } else if (passkey.publicKey && passkey.publicKey.buffer) {
+        // Handle BSON Binary object (has .buffer property)
+        pkUint8 = new Uint8Array(passkey.publicKey.buffer);
+    } else if (passkey.publicKey && passkey.publicKey.data) {
         // It's a Mongoose-style Buffer object { type: 'Buffer', data: [...] }
         pkUint8 = new Uint8Array(passkey.publicKey.data);
     } else if (Buffer.isBuffer(passkey.publicKey)) {
