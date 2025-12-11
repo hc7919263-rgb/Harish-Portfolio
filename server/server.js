@@ -458,8 +458,9 @@ app.get('/api/auth/passkeys', async (req, res) => {
         // Return index as "ID" or just map them
         const keys = (data.adminPasskeys || []).map((k, i) => ({
             id: k.id,
-            name: `Passkey Device ${i + 1}`, // Simple naming for now
-            created: k.counter || 0 // Proxy for usage?
+            name: k.deviceType || `Passkey Device ${i + 1}`, // Use stored name or fallback
+            transports: k.transports || [],
+            created: k.created || 0 // Proxy for usage?
         }));
         res.json({ success: true, keys });
     } catch (e) {
