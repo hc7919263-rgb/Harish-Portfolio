@@ -173,39 +173,37 @@ const origin = ['https://harish-portfolio-3fqm.onrender.com', 'http://localhost:
 app.enable('trust proxy');
 
 // 1. REGISTER: Generate Challenge
+// 1. REGISTER: Generate Challenge
 app.post('/api/auth/register-challenge', async (req, res) => {
-    // SECURITY: Only allow registration if user has verified PIN (Gatekeeper)
-    // For simplicity here, we trust the client has passed Step 1.
-    // In strict mode, pass a 'pin_token' from Step 1.
+    try {
+        // SECURITY: Only allow registration if user has verified PIN (Gatekeeper)
+        // For simplicity here, we trust the client has passed Step 1.
 
-    // Check if user already has passkeys (optional, limit to 1 usually or allow multiple)
-    // const data = await readDb();
-    // const existingPasskeys = data.adminPasskeys || [];
+        // Dynamic RP ID based on request
+        // On Render, req.hostname should be the domain (if trust proxy is on)
+        const rpID = req.hostname;
+        console.log("Registering with RP ID:", rpID);
 
-    // Dynamic RP ID based on request
-    const rpID = req.hostname;
-    console.log("Registering with RP ID:", rpID);
+        const options = await generateRegistrationOptions({
+            rpName,
+            rpID,
+            userID: "admin-user-id",
+            userName: "harish@admin",
+            authenticatorSelection: {
+                residentKey: 'preferred',
+                userVerification: 'preferred',
+                // authenticatorAttachment: 'cross-platform', 
+            },
+        });
 
-    const options = await generateRegistrationOptions({
-        rpName,
-        rpID,
-        userID: "admin-user-id", // Single user
-        userName: "harish@admin",
-        // excludeCredentials: existingPasskeys.map(key => ({
-        //     id: key.id,
-        //     transports: key.transports,
-        // })),
-        authenticatorSelection: {
-            residentKey: 'preferred',
-            userVerification: 'preferred',
-            // authenticatorAttachment: 'cross-platform', <--- REMOVED to allow Windows Hello / TouchID (Platform)
-        },
-    });
+        // Store challenge
+        challengeStore.set('admin-user-id', options.challenge);
 
-    // Store challenge
-    challengeStore.set('admin-user-id', options.challenge);
-
-    res.json(options);
+        res.json(options);
+    } catch (error) {
+        console.error("Register Challenge Error:", error);
+        res.status(500).json({ error: error.message, stack: error.stack });
+    }
 });
 
 // 2. REGISTER: Verify Response
