@@ -363,30 +363,46 @@ app.post('/api/auth/login-verify', async (req, res) => {
 
     console.log("DEBUG: Login - Authenticator Object for Verify:", JSON.stringify(authenticatorObj, (k, v) => k === 'credentialPublicKey' ? '[Uint8Array]' : v, 2));
 
+    const verifyOptions = {
+        response: body,
+        expectedChallenge: challenge,
+        expectedOrigin: origin,
+        expectedRPID: [expectedRPID, 'localhost'],
+        authenticator: authenticatorObj,
+    };
+
+    console.log("DEBUG: Verify Options Keys:", Object.keys(verifyOptions));
+
     let verification;
     try {
-        verification = await verifyAuthenticationResponse({
-            response: body,
-            expectedChallenge: challenge,
-            expectedOrigin: origin,
-            expectedRPID: [expectedRPID, 'localhost'],
-            authenticator: authenticatorObj,
-        });
+        verification = await verifyAuthenticationResponse(verifyOptions);
     } catch (error) {
-        console.error("Login Verify Error:", error);
-        return res.status(400).json({ error: error.message });
+        console.error("Login Verify Error (First Attempt):", error.message);
+        // Fallback: try passing as 'credential' if library version mismatch
+        try {
+            verification = await verifyAuthenticationResponse({
+                ...verifyOptions,
+                credential: authenticatorObj
+            });
+        } catch (e2) {
+            throw error; // Throw original
+        }
     }
+} catch (error) {
+    console.error("Login Verify Error:", error);
+    return res.status(400).json({ error: error.message });
+}
 
-    if (verification.verified) {
-        // Update counter
-        passkey.counter = verification.authenticationInfo.newCounter;
-        await writeDb(data);
+if (verification.verified) {
+    // Update counter
+    passkey.counter = verification.authenticationInfo.newCounter;
+    await writeDb(data);
 
-        challengeStore.delete('admin-user');
-        res.json({ success: true });
-    } else {
-        res.status(400).json({ success: false });
-    }
+    challengeStore.delete('admin-user');
+    res.json({ success: true });
+} else {
+    res.status(400).json({ success: false });
+}
 });
 // --- PIN Verification ---
 app.post('/api/verify-pin', (req, res) => {
