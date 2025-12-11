@@ -258,7 +258,9 @@ app.post('/api/auth/register-verify', async (req, res) => {
         }, 2));
 
         if (verification.verified && verification.registrationInfo) {
-            const { credentialID, credentialPublicKey, counter } = verification.registrationInfo;
+            // FIX: New SimpleWebAuthn structure has 'credential' object
+            const { credential } = verification.registrationInfo;
+            const { id: credentialID, publicKey: credentialPublicKey, counter } = credential;
 
             // FIX: Ensure public key exists
             if (!credentialPublicKey) {
