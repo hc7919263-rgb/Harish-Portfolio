@@ -221,11 +221,12 @@ app.post('/api/send-otp', async (req, res) => {
         res.json({ success: true, message: 'Email sent' });
     } catch (error) {
         console.error("Detailed Email Error:", error);
+        // Return clearer error to client
         res.status(500).json({
             success: false,
-            message: 'Failed to send email',
+            message: `Email failed: ${error.message}`,
             error: error.message,
-            code: error.code
+            code: error.code || 'UNKNOWN'
         });
     }
 });

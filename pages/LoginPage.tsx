@@ -53,23 +53,33 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
     // Handlers
     const handleSendOtp = async () => {
         setIsSending(true);
+        setError(''); // Clear previous errors
         try {
+            console.log("Requesting OTP...");
             const res = await fetch('/api/send-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({}) // Send to default admin
             });
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error(`Server returned non-JSON response: ${res.status} ${res.statusText}`);
+            }
+
             const data = await res.json();
 
             if (data.success) {
-                console.log("OTP Request Sent");
+                console.log("OTP Request Sent Successfully");
             } else {
                 console.warn("Server message:", data.message);
-                if (data.message) setError(data.message);
+                // Show specific server error if available
+                setError(data.message || 'Server rejected OTP request');
             }
         } catch (err: any) {
-            console.error("Failed to send", err);
-            setError(`Failed to email code. ${err.message || ''}`);
+            console.error("Failed to send OTP:", err);
+            // Show network or parsing errors
+            setError(`Failed to send email: ${err.message || 'Network Error'}`);
         } finally {
             setIsSending(false);
         }
