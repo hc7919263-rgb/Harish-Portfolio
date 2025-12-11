@@ -163,6 +163,7 @@ import {
 
 // In-memory store for challenges (in production, use Redis/DB)
 const challengeStore = new Map(); // { userId: challenge }
+const registrationSessions = new Map(); // { token: timestamp }
 
 // RP Config
 const rpName = 'Harish-Portfolio';
@@ -177,7 +178,20 @@ app.enable('trust proxy');
 app.post('/api/auth/register-challenge', async (req, res) => {
     try {
         // SECURITY: Only allow registration if user has verified PIN (Gatekeeper)
-        // For simplicity here, we trust the client has passed Step 1.
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+        if (!token || !registrationSessions.has(token)) {
+            console.error("DEBUG: Blocked unauthorized registration attempt.");
+            return res.status(401).json({ error: "Unauthorized. Please verify PIN first." });
+        }
+
+        // Check expiry (5 mins)
+        const ts = registrationSessions.get(token);
+        if (Date.now() - ts > 5 * 60 * 1000) {
+            registrationSessions.delete(token);
+            return res.status(401).json({ error: "Session expired. Please verify PIN again." });
+        }
 
         // Dynamic RP ID based on request
         // On Render, req.hostname should be the domain        // Dynamic RP ID with strict fallback
@@ -442,7 +456,21 @@ app.post('/api/verify-pin', (req, res) => {
     const CORRECT_PIN = process.env.ADMIN_PIN;
 
     if (pin === CORRECT_PIN) {
-        return res.json({ success: true });
+        // Generate a temporary registration token (valid for 5 mins)
+        // This is required to access /api/auth/register-challenge
+        const token = require('crypto').randomUUID();
+        registrationSessions.set(token, Date.now());
+
+        // Clean up old tokens occasionally? Or just let them sit (map size is small)
+        // Simple expiry check: cache cleaning
+        if (registrationSessions.size > 100) {
+            const now = Date.now();
+            for (const [t, ts] of registrationSessions) {
+                if (now - ts > 5 * 60 * 1000) registrationSessions.delete(t);
+            }
+        }
+
+        return res.json({ success: true, registrationToken: token });
     } else {
         return res.json({ success: false, message: 'Invalid PIN' });
     }
