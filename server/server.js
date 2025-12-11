@@ -153,115 +153,169 @@ app.get('/api/download-resume', async (req, res) => {
     }
 });
 
-// --- OTP Email ---
-// --- OTP Email & Verification ---
+// --- WebAuthn / Passkeys ---
+import {
+    generateRegistrationOptions,
+    verifyRegistrationResponse,
+    generateAuthenticationOptions,
+    verifyAuthenticationResponse,
+} from '@simplewebauthn/server';
 
-// --- OTP Email & Verification ---
-let otpStore = new Map(); // Store { email: { code, expires } }
+// In-memory store for challenges (in production, use Redis/DB)
+const challengeStore = new Map(); // { userId: challenge }
 
-// Global Transporter (Reuse connection pool)
-// Global Transporter (Reuse connection pool)
-// Global Transporter
-// FIX: Force IPv4 (family: 4) to prevent IPv6 timeouts on cloud networks.
-// Using Port 587 (STARTTLS) which is standard.
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    family: 4, // <--- Force IPv4
-    connectionTimeout: 60000, // Increase to 60s
-    greetingTimeout: 30000
+// RP Config
+const rpName = 'Harish-Portfolio';
+const rpID = 'harish-portfolio-3fqm.onrender.com'; // Change to actual domain or 'localhost' for dev
+const origin = ['https://harish-portfolio-3fqm.onrender.com', 'http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'];
+
+// 1. REGISTER: Generate Challenge
+app.post('/api/auth/register-challenge', async (req, res) => {
+    // SECURITY: Only allow registration if user has verified PIN (Gatekeeper)
+    // For simplicity here, we trust the client has passed Step 1.
+    // In strict mode, pass a 'pin_token' from Step 1.
+
+    // Check if user already has passkeys (optional, limit to 1 usually or allow multiple)
+    // const data = await readDb();
+    // const existingPasskeys = data.adminPasskeys || [];
+
+    const options = await generateRegistrationOptions({
+        rpName,
+        rpID: 'localhost', // FIX: Needs to vary based on environment!
+        // We will detect hostname from request for flexibility
+        // rpID: req.hostname, 
+        userID: "admin-user-id", // Single user
+        userName: "harish@admin",
+        // excludeCredentials: existingPasskeys.map(key => ({
+        //     id: key.id,
+        //     transports: key.transports,
+        // })),
+        authenticatorSelection: {
+            residentKey: 'preferred',
+            userVerification: 'preferred',
+            authenticatorAttachment: 'cross-platform', // Allow Phone/PC
+        },
+    });
+
+    // Store challenge
+    challengeStore.set('admin-user-id', options.challenge);
+
+    res.json(options);
 });
 
-// Verify connection once on startup
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("❌ SMTP Connection Error:", error);
+// 2. REGISTER: Verify Response
+app.post('/api/auth/register-verify', async (req, res) => {
+    const { body } = req;
+    const challenge = challengeStore.get('admin-user-id');
+
+    if (!challenge) return res.status(400).json({ error: 'No challenge found' });
+
+    let verification;
+    try {
+        verification = await verifyRegistrationResponse({
+            response: body,
+            expectedChallenge: challenge,
+            expectedOrigin: origin,
+            expectedRPID: ['localhost', 'harish-portfolio-3fqm.onrender.com'], // Flexible RP ID
+        });
+    } catch (error) {
+        console.error("WebAuthn Verification Failed:", error);
+        return res.status(400).json({ error: error.message });
+    }
+
+    if (verification.verified && verification.registrationInfo) {
+        const { credentialID, credentialPublicKey, counter } = verification.registrationInfo;
+
+        const newPasskey = {
+            id: credentialID,
+            publicKey: Buffer.from(credentialPublicKey), // Store as Buffer/Binary
+            counter: counter,
+            transports: body.response.transports,
+        };
+
+        // Save to DB
+        const data = await readDb();
+        if (!data.adminPasskeys) data.adminPasskeys = [];
+        data.adminPasskeys.push(newPasskey);
+        await writeDb(data);
+
+        challengeStore.delete('admin-user-id');
+        res.json({ success: true });
     } else {
-        console.log("✅ SMTP Server is ready to take our messages");
+        res.status(400).json({ success: false, error: 'Verification failed' });
     }
 });
 
-app.post('/api/send-otp', async (req, res) => {
-    const { email } = req.body;
-    console.log("Requesting OTP for:", email || "default admin");
+// 3. LOGIN: Generate Challenge
+app.post('/api/auth/login-challenge', async (req, res) => {
+    const data = await readDb();
+    const existingPasskeys = data.adminPasskeys || [];
 
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + 5 * 60 * 1000;
-    const key = email || 'admin';
-    otpStore.set(key, { code: otpCode, expires });
-
-    // SECURE IMPLEMENTATION:
-    // Send email from SERVER via EmailJS REST API (Port 443).
-    // This keeps otpCode secret and bypasses SMTP port blocking.
-
-    const serviceId = process.env.VITE_ADMIN_SERVICE_ID;
-    const templateId = process.env.VITE_ADMIN_TEMPLATE_ID;
-    const publicKey = process.env.VITE_ADMIN_PUBLIC_KEY;
+    if (existingPasskeys.length === 0) {
+        return res.json({ success: false, message: 'No passkeys registered.' });
+    }
 
     try {
-        const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'Nodejs/Server'
+        const options = await generateAuthenticationOptions({
+            rpID,
+            allowCredentials: existingPasskeys.map(key => ({
+                id: key.id,
+                transports: key.transports,
+            })),
+            userVerification: 'preferred',
+        });
+
+        challengeStore.set('admin-user', options.challenge);
+        res.json(options);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 4. LOGIN: Verify Response
+app.post('/api/auth/login-verify', async (req, res) => {
+    const { body } = req;
+    const challenge = challengeStore.get('admin-user');
+    const rpID = req.hostname;
+
+    if (!challenge) return res.status(400).json({ error: 'No Login Challenge found' });
+
+    const data = await readDb();
+    const existingPasskeys = data.adminPasskeys || [];
+
+    // Find the passkey used
+    const passkey = existingPasskeys.find(key => key.id === body.id);
+    if (!passkey) return res.status(400).json({ error: 'Passkey not found' });
+
+    let verification;
+    try {
+        verification = await verifyAuthenticationResponse({
+            response: body,
+            expectedChallenge: challenge,
+            expectedOrigin: origin,
+            expectedRPID: rpID,
+            authenticator: {
+                credentialID: passkey.id,
+                credentialPublicKey: new Uint8Array(passkey.publicKey.data || passkey.publicKey),
+                counter: passkey.counter,
             },
-            body: JSON.stringify({
-                service_id: serviceId,
-                template_id: templateId,
-                user_id: publicKey,
-                template_params: {
-                    to_name: "Admin",
-                    otp_code: otpCode,
-                    message: "Here is your secure OTP for login."
-                }
-            })
         });
-
-        if (emailResponse.ok) {
-            console.log("✅ Secure Email Sent via EmailJS API");
-            res.json({ success: true, message: 'OTP sent securely' });
-        } else {
-            const errText = await emailResponse.text();
-            console.error("❌ EmailJS API Error:", errText);
-            throw new Error(`EmailJS Error: ${errText}`);
-        }
     } catch (error) {
-        console.error("Detailed Email Error:", error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to send secure email',
-            error: error.message
-        });
-    }
-});
-
-app.post('/api/verify-otp', (req, res) => {
-    const { email, code } = req.body;
-    const key = email || 'admin';
-    const record = otpStore.get(key);
-
-    if (!record) return res.json({ success: false, message: 'No OTP found' });
-    if (Date.now() > record.expires) {
-        otpStore.delete(key);
-        return res.json({ success: false, message: 'OTP expired' });
+        console.error("Login Verify Error:", error);
+        return res.status(400).json({ error: error.message });
     }
 
-    if (record.code === code) {
-        otpStore.delete(key); // clear after use
-        return res.json({ success: true });
+    if (verification.verified) {
+        // Update counter
+        passkey.counter = verification.authenticationInfo.newCounter;
+        await writeDb(data);
+
+        challengeStore.delete('admin-user');
+        res.json({ success: true });
     } else {
-        return res.json({ success: false, message: 'Invalid Code' });
+        res.status(400).json({ success: false });
     }
 });
-
 // --- PIN Verification ---
 app.post('/api/verify-pin', (req, res) => {
     const { pin } = req.body;

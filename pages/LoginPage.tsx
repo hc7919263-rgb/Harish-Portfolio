@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Lock, Shield, AlertTriangle, Phone, Mail, CheckCircle, Smartphone, Calculator } from 'lucide-react';
-import emailjs from '@emailjs/browser';
+import { ArrowLeft, Lock, Shield, AlertTriangle, Fingerprint, Calculator, Plus, Loader2 } from 'lucide-react';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 
 interface LoginPageProps {
     onLoginSuccess: () => void;
@@ -9,13 +9,13 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => {
     // State
-    const [step, setStep] = useState<1 | 2 | 3>(1); // 1=PIN, 2=OTP, 3=Math
+    const [step, setStep] = useState<1 | 2 | 3>(1); // 1=PIN, 2=Passkey, 3=Math
     const [inputVal, setInputVal] = useState('');
     const [error, setError] = useState('');
     const [attempts, setAttempts] = useState(0);
     const [isLocked, setIsLocked] = useState(false);
     const [countdown, setCountdown] = useState(0);
-    const [isSending, setIsSending] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Math State
     const [mathQ, setMathQ] = useState({ q: '', a: 0 });
@@ -36,8 +36,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
     // Generate Math Question
     useEffect(() => {
         if (step === 3) {
-            const n1 = Math.floor(Math.random() * 20) + 10; // 10-30
-            const n2 = Math.floor(Math.random() * 10) + 1;  // 1-10
+            const n1 = Math.floor(Math.random() * 20) + 10;
+            const n2 = Math.floor(Math.random() * 10) + 1;
             const ops = ['+', '-', '*'];
             const op = ops[Math.floor(Math.random() * 3)];
 
@@ -51,72 +51,101 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
         }
     }, [step]);
 
-    // Handlers
-    const handleSendOtp = async () => {
-        setIsSending(true);
-        setError(''); // Clear previous errors
+    // Auto-trigger Passkey Login on Step 2 entry
+    useEffect(() => {
+        if (step === 2 && !isLoading) {
+            // Optional: Automatically try login? 
+            // Better to let user click to avoid intrusive popups if they prefer registering
+        }
+    }, [step]);
+
+    // --- Passkey Handlers ---
+
+    const handleRegisterPasskey = async () => {
+        setIsLoading(true);
+        setError('');
         try {
-            console.log("Requesting OTP...");
-            // 1. Ask Server to generate OTP and send email securely
-            const res = await fetch('/api/send-otp', {
+            // 1. Get Challenge
+            const resp = await fetch('/api/auth/register-challenge', { method: 'POST' });
+            const options = await resp.json();
+
+            // 2. Browser Native Prompt
+            const attResp = await startRegistration(options);
+
+            // 3. Verify
+            const verResp = await fetch('/api/auth/register-verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}) // Send to default admin
+                body: JSON.stringify(attResp),
             });
 
-            const contentType = res.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                throw new Error(`Server returned non-JSON response: ${res.status} ${res.statusText}`);
-            }
+            const verification = await verResp.json();
 
-            const data = await res.json();
-
-            if (data.success) {
-                console.log("Secure OTP Sent by Server");
+            if (verification.success) {
+                // Success! Now allow them to proceed to step 3? 
+                // Or just say "Registered! Now Login".
+                alert("Passkey Registered Successfully! You can now use it to login.");
+                // Let them try login now
             } else {
-                console.warn("Server message:", data.message);
-                throw new Error(data.message || 'Server failed to generate OTP');
+                throw new Error(verification.error || 'Verification failed');
             }
-        } catch (err: any) {
-            console.error("Failed to send OTP:", err);
-            // Show network or parsing errors
-            setError(`Failed to send email: ${err.message || 'Network Error'}`);
+        } catch (e: any) {
+            console.error(e);
+            setError(e.name === 'NotAllowedError' ? 'Cancelled by user' : 'Registration failed');
         } finally {
-            setIsSending(false);
+            setIsLoading(false);
         }
     };
 
-    const handleVerifyOtp = async () => {
-        setIsLocked(true); // Temp lock UI while validating
+    const handleLoginPasskey = async () => {
+        setIsLoading(true);
+        setError('');
         try {
-            const res = await fetch('/api/verify-otp', {
+            // 1. Get Challenge
+            const resp = await fetch('/api/auth/login-challenge', { method: 'POST' });
+            const data = await resp.json();
+
+            if (!data.options) {
+                // No passkeys exist?
+                setError(data.message || 'No passkeys found. Please Register first.');
+                return;
+            }
+
+            // 2. Browser Native Prompt
+            const asseResp = await startAuthentication(data.options);
+
+            // 3. Verify
+            const verResp = await fetch('/api/auth/login-verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: inputVal })
+                body: JSON.stringify(asseResp),
             });
-            const data = await res.json();
 
-            if (data.success) {
-                setStep(3);
+            const verification = await verResp.json();
+
+            if (verification.success) {
+                setStep(3); // Success -> Math
                 setError('');
-                setIsLocked(false);
             } else {
-                setIsLocked(false);
-                handleFail();
+                throw new Error('Authentication failed');
             }
-        } catch (e) {
-            setIsLocked(false);
-            setError('Verification Error');
+        } catch (e: any) {
+            console.error(e);
+            setError(e.name === 'NotAllowedError' ? 'Cancelled by user' : 'Login failed');
+        } finally {
+            setIsLoading(false);
         }
-    }
+    };
+
+    // --- Submit Handlers ---
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isLocked) return;
-        if (!inputVal) return;
 
         // Step 1: PIN
         if (step === 1) {
+            if (!inputVal) return;
             try {
                 const res = await fetch('/api/verify-pin', {
                     method: 'POST',
@@ -129,7 +158,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
                     setStep(2);
                     setInputVal('');
                     setError('');
-                    handleSendOtp();
                 } else {
                     handleFail();
                 }
@@ -138,12 +166,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
                 setError("Connection Error");
             }
         }
-        // Step 2: OTP
-        else if (step === 2) {
-            await handleVerifyOtp();
-        }
         // Step 3: Math
         else if (step === 3) {
+            if (!inputVal) return;
             if (parseInt(inputVal) === mathQ.a) {
                 onLoginSuccess();
             } else {
@@ -190,15 +215,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-purple-600 mb-6 shadow-lg shadow-blue-900/50">
                             {step === 1 && <Lock className="w-8 h-8 text-white" />}
-                            {step === 2 && <Shield className="w-8 h-8 text-white" />}
+                            {step === 2 && <Fingerprint className="w-8 h-8 text-white" />}
                             {step === 3 && <Calculator className="w-8 h-8 text-white" />}
                         </div>
                         <h1 className="text-3xl font-black text-white tracking-tight mb-2">
-                            {step === 1 ? 'Admin Access' : step === 2 ? 'Security Check' : 'Humanity Test'}
+                            {step === 1 ? 'Admin Access' : step === 2 ? 'Biometric Auth' : 'Humanity Test'}
                         </h1>
                         <p className="text-gray-400 text-sm font-medium">
                             {step === 1 ? 'Enter your secure PIN to continue.' :
-                                step === 2 ? (isSending ? 'Sending OTP via secure channel...' : 'Enter the code sent to your email.') :
+                                step === 2 ? 'Use your device passkey (TouchID/FaceID).' :
                                     'Solve the equation to verify session.'}
                         </p>
                     </div>
@@ -211,58 +236,98 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
                             <div className="text-4xl font-black text-white font-mono">{countdown}s</div>
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="space-y-8">
+                            {/* STEP 1 & 3: Input Form */}
+                            {(step === 1 || step === 3) && (
+                                <form onSubmit={handleSubmit} className="space-y-8">
+                                    {step === 3 && (
+                                        <div className="text-center">
+                                            <div className="inline-block px-6 py-3 bg-gray-800/50 border border-gray-700 rounded-xl">
+                                                <span className="text-3xl font-bold text-white font-mono tracking-wider">{mathQ.q} = ?</span>
+                                            </div>
+                                        </div>
+                                    )}
 
-                            {step === 3 && (
-                                <div className="text-center">
-                                    <div className="inline-block px-6 py-3 bg-gray-800/50 border border-gray-700 rounded-xl">
-                                        <span className="text-3xl font-bold text-white font-mono tracking-wider">{mathQ.q} = ?</span>
+                                    <div className="relative group">
+                                        <input
+                                            type={step === 3 ? "number" : "password"}
+                                            autoFocus
+                                            value={inputVal}
+                                            onChange={(e) => setInputVal(e.target.value.replace(/\D/g, ''))}
+                                            maxLength={step === 3 ? 10 : 6}
+                                            className={`w-full bg-gray-950/50 border-2 text-center text-4xl font-bold py-5 rounded-2xl text-white placeholder-gray-800 transition-all focus:outline-none 
+                                                ${error
+                                                    ? 'border-red-500/50 focus:border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]'
+                                                    : 'border-gray-800 focus:border-blue-500/50 focus:shadow-[0_0_20px_rgba(59,130,246,0.2)]'}
+                                                ${step !== 3 ? 'tracking-[0.5em]' : 'tracking-widest'}
+                                            `}
+                                            placeholder={step === 3 ? "?" : "••••••"}
+                                        />
                                     </div>
+
+                                    {error && (
+                                        <div className="text-red-400 text-sm font-bold text-center animate-in slide-in-from-top-2 flex items-center justify-center gap-2">
+                                            <AlertTriangle className="w-4 h-4" /> {error}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        disabled={!inputVal}
+                                        className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2
+                                            ${inputVal
+                                                ? 'bg-white text-black hover:bg-gray-100 shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                                                : 'bg-gray-800 text-gray-500 cursor-not-allowed'}
+                                        `}
+                                    >
+                                        {step === 3 ? 'Unlock Dashboard' : 'Continue'}
+                                        <ArrowLeft className="w-5 h-5 rotate-180" />
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* STEP 2: Passkey UI */}
+                            {step === 2 && (
+                                <div className="space-y-4">
+                                    {error && (
+                                        <div className="text-red-400 text-sm font-bold text-center animate-in slide-in-from-top-2 flex items-center justify-center gap-2 bg-red-500/10 p-2 rounded-lg">
+                                            <AlertTriangle className="w-4 h-4" /> {error}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={handleLoginPasskey}
+                                        disabled={isLoading}
+                                        className="w-full py-5 rounded-xl font-bold text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3"
+                                    >
+                                        {isLoading ? (
+                                            <Loader2 className="w-6 h-6 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Fingerprint className="w-6 h-6" />
+                                                Authenticate with Passkey
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <div className="relative flex py-2 items-center">
+                                        <div className="flex-grow border-t border-gray-700"></div>
+                                        <span className="flex-shrink-0 mx-4 text-gray-600 text-xs uppercase">New Device?</span>
+                                        <div className="flex-grow border-t border-gray-700"></div>
+                                    </div>
+
+                                    <button
+                                        onClick={handleRegisterPasskey}
+                                        disabled={isLoading}
+                                        className="w-full py-4 rounded-xl font-bold text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Register New Device
+                                    </button>
                                 </div>
                             )}
 
-                            <div className="relative group">
-                                <input
-                                    type={step === 3 ? "number" : "password"}
-                                    autoFocus
-                                    value={inputVal}
-                                    onChange={(e) => setInputVal(e.target.value.replace(/\D/g, ''))}
-                                    maxLength={step === 3 ? 10 : 6}
-                                    disabled={isSending}
-                                    className={`w-full bg-gray-950/50 border-2 text-center text-4xl font-bold py-5 rounded-2xl text-white placeholder-gray-800 transition-all focus:outline-none 
-                                        ${error
-                                            ? 'border-red-500/50 focus:border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]'
-                                            : 'border-gray-800 focus:border-blue-500/50 focus:shadow-[0_0_20px_rgba(59,130,246,0.2)]'}
-                                        ${step !== 3 ? 'tracking-[0.5em]' : 'tracking-widest'}
-                                    `}
-                                    placeholder={step === 3 ? "?" : "••••••"}
-                                />
-                                {step === 2 && isSending && (
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {error && (
-                                <div className="text-red-400 text-sm font-bold text-center animate-in slide-in-from-top-2 flex items-center justify-center gap-2">
-                                    <AlertTriangle className="w-4 h-4" /> {error}
-                                </div>
-                            )}
-
-                            <button
-                                type="submit"
-                                disabled={!inputVal || isSending}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2
-                                    ${inputVal && !isSending
-                                        ? 'bg-white text-black hover:bg-gray-100 shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                                        : 'bg-gray-800 text-gray-500 cursor-not-allowed'}
-                                `}
-                            >
-                                {step === 3 ? 'Unlock Dashboard' : 'Continue'}
-                                {!isSending && <ArrowLeft className="w-5 h-5 rotate-180" />}
-                            </button>
-                        </form>
+                        </div>
                     )}
 
                     {/* Footer Status */}
@@ -271,7 +336,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => 
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                             System Online
                         </div>
-                        <div>Secure Connection</div>
+                        <div>Secure Enclave</div>
                     </div>
                 </div>
             </div>

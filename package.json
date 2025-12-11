@@ -13,6 +13,8 @@
     },
     "dependencies": {
         "@emailjs/browser": "^4.4.1",
+        "@simplewebauthn/browser": "^13.2.2",
+        "@simplewebauthn/server": "^13.2.2",
         "@types/canvas-confetti": "^1.9.0",
         "@types/react-google-recaptcha": "^2.1.9",
         "body-parser": "^2.2.1",

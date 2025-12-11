@@ -16,6 +16,8 @@ const PortfolioSchema = new mongoose.Schema({
         technical: { type: Array, default: [] },
         soft: { type: Array, default: [] }
     },
+    // WebAuthn Passkeys for Admin
+    adminPasskeys: { type: Array, default: [] }, // Stores { id, publicKey, counter, transports }
     meta: {
         aboutText: String,
         resumeLastUpdated: String,
