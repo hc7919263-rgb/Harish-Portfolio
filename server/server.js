@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 import nodemailer from 'nodemailer'; // Imported
 
 const __filename = fileURLToPath(import.meta.url);
