@@ -251,6 +251,12 @@ app.post('/api/auth/register-verify', async (req, res) => {
             return res.status(400).json({ error: error.message });
         }
 
+        // Log the full verification object to see what's inside
+        console.log("DEBUG: Verification Object:", JSON.stringify(verification, (key, value) => {
+            if (key === 'publicKey' || key === 'credentialPublicKey') return '[Buffer/Uint8Array]'; // Avoid spamming giant arrays
+            return value;
+        }, 2));
+
         if (verification.verified && verification.registrationInfo) {
             const { credentialID, credentialPublicKey, counter } = verification.registrationInfo;
 
