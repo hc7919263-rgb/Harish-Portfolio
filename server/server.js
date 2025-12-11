@@ -193,7 +193,7 @@ app.post('/api/auth/register-challenge', async (req, res) => {
         const options = await generateRegistrationOptions({
             rpName,
             rpID,
-            userID: "admin-user-id",
+            userID: new Uint8Array(Buffer.from("admin-user-id")), // FIX: Must be Uint8Array
             userName: "harish@admin",
             authenticatorSelection: {
                 residentKey: 'preferred',
