@@ -160,18 +160,19 @@ app.get('/api/download-resume', async (req, res) => {
 let otpStore = new Map(); // Store { email: { code, expires } }
 
 // Global Transporter (Reuse connection pool)
+// Global Transporter (Reuse connection pool)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL
+    port: 587, // Use 587 for STARTTLS (often more reliable on cloud hosts than 465)
+    secure: false, // Must be false for port 587
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
     },
-    pool: true, // Enable connection pooling
+    pool: true,
     maxConnections: 5,
     maxMessages: 100,
-    connectionTimeout: 10000
+    connectionTimeout: 30000 // Increase timeout to 30 seconds
 });
 
 // Verify connection once on startup
