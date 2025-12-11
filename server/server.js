@@ -180,15 +180,15 @@ app.post('/api/auth/register-challenge', async (req, res) => {
         // For simplicity here, we trust the client has passed Step 1.
 
         // Dynamic RP ID based on request
-        // On Render, req.hostname should be the domain        // Dynamic RP ID based on request
-        // On Render, req.hostname should be the domain (if trust proxy is on)
-        const rpID = req.hostname;
-        console.log("DEBUG: Registering with RP ID:", rpID);
-        console.log("DEBUG: RP Name:", rpName);
-
-        if (!rpID) {
-            throw new Error("rpID (req.hostname) is undefined or empty");
+        // On Render, req.hostname should be the domain        // Dynamic RP ID with strict fallback
+        // If we are on Render (not localhost), force the production domain.
+        // This prevents issues where req.hostname might be internal IP or proxy ID.
+        let rpID = req.hostname;
+        if (!rpID.includes('localhost') && !rpID.includes('127.0.0.1')) {
+            rpID = 'harish-portfolio-3fqm.onrender.com';
         }
+
+        console.log("DEBUG: Registering with RP ID:", rpID);
 
         const options = await generateRegistrationOptions({
             rpName,
