@@ -53,12 +53,12 @@ const readDb = async () => {
 // In Mongoose, we usually update specific fields, but to keep 'server.js' logic similar:
 const writeDb = async (data) => {
     try {
-        // data is just a POJO or Document. 
-        // We update the 'main' document with the new data.
+        console.log("DEBUG: Writing to DB...", JSON.stringify(data.adminPasskeys ? data.adminPasskeys.length : 0));
         await PortfolioData.findByIdAndUpdate('main', data, { upsert: true });
+        console.log("DEBUG: DB Write Success");
         return true;
     } catch (err) {
-        console.error("Error writing DB:", err);
+        console.error("DEBUG: Error writing DB:", err);
         return false;
     }
 };
