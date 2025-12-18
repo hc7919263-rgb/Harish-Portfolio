@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import axios from 'axios';
 import 'dotenv/config'; // Load .env
 import bodyParser from 'body-parser';
@@ -23,6 +24,7 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
+app.use(compression()); // Compress all responses
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -634,7 +636,18 @@ app.get('/api/analytics', async (req, res) => {
 // --- Serve React Frontend (Production) ---
 const distPath = path.join(__dirname, '../dist');
 if (fs.existsSync(distPath)) {
-    app.use(express.static(distPath));
+    // Serve static files with caching
+    app.use(express.static(distPath, {
+        maxAge: '1y', // Cache assets for 1 year
+        etag: true,
+        lastModified: true,
+        setHeaders: (res, filePath) => {
+            // Do not cache HTML files to ensure users always get the latest version
+            if (filePath.endsWith('.html')) {
+                res.setHeader('Cache-Control', 'no-cache');
+            }
+        }
+    }));
     // Express 5 regex wildcard for SPA fallback
     app.get(/(.*)/, (req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));

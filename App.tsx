@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import Header from './components/Header';
-import HomePage from './pages/HomePage';
-import CreationsPage from './pages/CreationsPage';
-import ContactPage from './pages/ContactPage';
-import FoundationPage from './pages/FoundationPage';
-import ChatbotPage from './pages/ChatbotPage';
+import HomePage from './pages/HomePage'; // Keep eager for fast initial load
+const CreationsPage = lazy(() => import('./pages/CreationsPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const FoundationPage = lazy(() => import('./pages/FoundationPage'));
+const ChatbotPage = lazy(() => import('./pages/ChatbotPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+
 import NotFoundPage from './components/NotFoundPage';
 import MagicInkTrail from './components/MagicInkTrail';
 import ChatbotIcon from './components/ChatbotIcon';
 import Footer from './components/Footer';
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
-import AdminPage from './pages/AdminPage';
-import LoginPage from './pages/LoginPage';
 import { DataProvider, useData } from './context/DataContext';
 
 type Page = 'home' | 'creations' | 'contact' | 'foundation' | 'chatbot' | '404' | 'terms' | 'privacy' | 'admin';
@@ -51,9 +52,13 @@ const AppContent: React.FC<{
     }
 
     if (currentPage === 'admin') {
-      return isAuthenticated
-        ? <AdminPage onNavigate={handleNavigate} />
-        : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} onNavigate={handleNavigate} />;
+      return (
+        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+          {isAuthenticated
+            ? <AdminPage onNavigate={handleNavigate} />
+            : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} onNavigate={handleNavigate} />}
+        </Suspense>
+      );
     }
 
     return (
@@ -62,15 +67,17 @@ const AppContent: React.FC<{
         {currentPage !== 'chatbot' && <ChatbotIcon onNavigate={(page) => handleNavigate(page as any)} />}
         <Header onNavigate={handleNavigate} currentPage={currentPage as any} />
 
-        <div className="flex-grow">
-          {currentPage === 'home' && <HomePage onNavigate={handleNavigate} />}
-          {currentPage === 'creations' && <CreationsPage />}
-          {currentPage === 'foundation' && <FoundationPage />}
-          {currentPage === 'chatbot' && <ChatbotPage />}
-          {currentPage === 'contact' && <ContactPage />}
-          {currentPage === 'terms' && <TermsPage />}
-          {currentPage === 'privacy' && <PrivacyPage />}
-        </div>
+        <Suspense fallback={<div className="flex-grow h-screen bg-white" />}>
+          <div className="flex-grow">
+            {currentPage === 'home' && <HomePage onNavigate={handleNavigate} />}
+            {currentPage === 'creations' && <CreationsPage />}
+            {currentPage === 'foundation' && <FoundationPage />}
+            {currentPage === 'chatbot' && <ChatbotPage />}
+            {currentPage === 'contact' && <ContactPage />}
+            {currentPage === 'terms' && <TermsPage />}
+            {currentPage === 'privacy' && <PrivacyPage />}
+          </div>
+        </Suspense>
 
         {currentPage !== 'chatbot' && <Footer onNavigate={(page) => handleNavigate(page)} />}
       </main>
