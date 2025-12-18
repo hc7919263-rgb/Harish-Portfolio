@@ -33,7 +33,7 @@ const AppContent: React.FC<{
         loader.style.opacity = '0';
         setTimeout(() => {
           if (loader.parentNode) loader.remove();
-        }, 500);
+        }, 300);
       }
     }
   }, [isLoading]);

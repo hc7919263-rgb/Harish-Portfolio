@@ -205,7 +205,7 @@ const ChatbotPage: React.FC = () => {
             };
             setMessages(prev => [...prev, botMsg]);
             setIsTyping(false);
-        }, 600);
+        }, 300);
     };
 
     // Initial Greeting Effect
