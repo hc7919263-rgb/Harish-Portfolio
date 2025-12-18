@@ -467,8 +467,22 @@ app.post('/api/auth/login-verify', rateLimit(5, 5 * 60 * 1000), async (req, res)
         return res.status(500).json({ error: "Stored Passkey is corrupted (Empty Public Key). Please delete it." });
     }
 
+    // --- Improved WebAuthn Normalization ---
+    // credentialID must be a Uint8Array (base64url decoded)
+    let credIdUint8;
+    try {
+        // Simple Base64URL to Uint8Array conversion
+        const base64 = passkey.id.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = base64.length % 4;
+        const padded = pad ? base64 + '='.repeat(4 - pad) : base64;
+        credIdUint8 = new Uint8Array(Buffer.from(padded, 'base64'));
+    } catch (e) {
+        console.error("ID Normalization Fail:", e.message);
+        credIdUint8 = new Uint8Array(Buffer.from(passkey.id)); // Fallback
+    }
+
     const authenticator = {
-        credentialID: passkey.id,
+        credentialID: credIdUint8,
         credentialPublicKey: pkUint8,
         counter: Number(passkey.counter || 0),
         transports: passkey.transports,
@@ -484,7 +498,7 @@ app.post('/api/auth/login-verify', rateLimit(5, 5 * 60 * 1000), async (req, res)
             authenticator,
         });
     } catch (error) {
-        console.error("Login Verify Error:", error.message);
+        console.error("Login Verify Error (V13):", error.message);
         return res.status(400).json({ error: error.message });
     }
 
@@ -620,6 +634,18 @@ app.get('/api/analytics', async (req, res) => {
         totalVisitors: data.meta ? data.meta.totalVisitors : 0,
         resumeDownloads: data.meta ? (data.meta.resumeDownloads || 0) : 0
     });
+});
+
+app.post('/api/debug/test-email', async (req, res) => {
+    const { pin } = req.body;
+    if (pin !== process.env.ADMIN_PIN) return res.status(401).json({ error: 'Wrong PIN' });
+
+    try {
+        await sendSecurityAlert('TEST ALERT', req);
+        res.json({ success: true, message: 'Check logs for delivery status' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // --- Serve React Frontend (Production) ---
