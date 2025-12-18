@@ -10,12 +10,25 @@ const ChatbotIcon: React.FC<ChatbotIconProps> = ({ onNavigate }) => {
             onClick={() => onNavigate('chatbot')}
             className="fixed bottom-6 right-6 z-50 group cursor-pointer"
         >
-            {/* Thought Bubble */}
-            <div className="absolute bottom-full right-4 mb-4 opacity-0 group-hover:opacity-100 md:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
-                <div className="relative bg-white/80 backdrop-blur-md border border-white/20 px-4 py-2 rounded-2xl shadow-xl shadow-black/5 whitespace-nowrap animate-bounce-subtle">
-                    <span className="text-sm font-bold text-gray-800 tracking-tight">Ask me about Harish!</span>
-                    {/* Bubble Tail */}
-                    <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white/80 backdrop-blur-md border-r border-b border-white/20 rotate-45"></div>
+            {/* Thought Bubble (Cloud Style) */}
+            <div className="absolute bottom-full right-0 mb-10 pointer-events-none animate-bubble-loop">
+                <div className="relative flex flex-col items-center">
+                    {/* Cloud Body */}
+                    <div className="relative bg-white/90 backdrop-blur-lg border border-white/20 px-5 py-2.5 rounded-[40px] shadow-2xl shadow-black/10 whitespace-nowrap">
+                        <span className="text-sm font-black text-gray-800 tracking-tight relative z-10">Ask me about Harish!</span>
+
+                        {/* Cloud Bumps */}
+                        <div className="absolute -top-3 -left-1 w-7 h-7 bg-white/90 backdrop-blur-lg rounded-full border-t border-l border-white/10"></div>
+                        <div className="absolute -top-4 right-4 w-9 h-9 bg-white/90 backdrop-blur-lg rounded-full border-t border-white/10"></div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white/90 backdrop-blur-lg rounded-full border-b border-r border-white/10"></div>
+                        <div className="absolute -bottom-2 left-6 w-5 h-5 bg-white/90 backdrop-blur-lg rounded-full border-b border-white/10"></div>
+                    </div>
+
+                    {/* Thought Dots */}
+                    <div className="flex flex-col items-end w-full pr-10 mt-1 gap-1.5 translate-x-1">
+                        <div className="w-3.5 h-3.5 bg-white/90 backdrop-blur-lg rounded-full border border-white/20 shadow-md"></div>
+                        <div className="w-2 h-2 bg-white/90 backdrop-blur-lg rounded-full border border-white/20 shadow-md mr-1"></div>
+                    </div>
                 </div>
             </div>
 
@@ -30,12 +43,12 @@ const ChatbotIcon: React.FC<ChatbotIconProps> = ({ onNavigate }) => {
             </div>
 
             <style>{`
-                @keyframes bounce-subtle {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-5px); }
+                @keyframes bubble-loop {
+                    0%, 100% { opacity: 0; transform: translateY(15px) scale(0.8); }
+                    5%, 75% { opacity: 1; transform: translateY(0) scale(1); }
                 }
-                .animate-bounce-subtle {
-                    animation: bounce-subtle 3s ease-in-out infinite;
+                .animate-bubble-loop {
+                    animation: bubble-loop 8s ease-in-out infinite;
                 }
             `}</style>
         </div>
