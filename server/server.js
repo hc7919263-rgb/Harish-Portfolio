@@ -660,7 +660,7 @@ app.listen(PORT, () => {
 
 // --- Keep-Alive Script (Prevent Render Cold Start) ---
 const url = `https://harish-portfolio-3fqm.onrender.com`;
-const interval = 30000; // 30 seconds
+const interval = 600000; // 10 minutes
 
 function reloadWebsite() {
     axios
