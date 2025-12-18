@@ -3,8 +3,8 @@ import nodemailer from 'nodemailer';
 // --- Email Configuration ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // SSL/TLS
+    port: 587,
+    secure: false, // STARTTLS (usually better for Render)
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -12,10 +12,10 @@ const transporter = nodemailer.createTransport({
     tls: {
         rejectUnauthorized: false
     },
-    pool: true, // Use a pool for multiple alerts
-    maxConnections: 5,
-    maxMessages: 100,
-    connectionTimeout: 10000,
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 50,
+    connectionTimeout: 20000, // Increased to 20s
 });
 
 // Verify Transporter on Startup

@@ -467,44 +467,25 @@ app.post('/api/auth/login-verify', rateLimit(5, 5 * 60 * 1000), async (req, res)
         return res.status(500).json({ error: "Stored Passkey is corrupted (Empty Public Key). Please delete it." });
     }
 
-    const authenticatorObj = {
+    const authenticator = {
         credentialID: passkey.id,
         credentialPublicKey: pkUint8,
         counter: Number(passkey.counter || 0),
         transports: passkey.transports,
     };
-    // Add aliases for compatibility with different usage (authenticator vs credential)
-    authenticatorObj.publicKey = authenticatorObj.credentialPublicKey;
-    authenticatorObj.id = authenticatorObj.credentialID;
-
-    // Do NOT hide the [Uint8Array] anymore, we need to know if it's empty
-    console.log("DEBUG: Login - Authenticator Object for Verify:", JSON.stringify(authenticatorObj, null, 2));
-
-    const verifyOptions = {
-        response: body,
-        expectedChallenge: challenge,
-        expectedOrigin: origin,
-        expectedRPID: [expectedRPID, 'localhost'],
-        authenticator: authenticatorObj,
-    };
-
-    console.log("DEBUG: Verify Options Keys:", Object.keys(verifyOptions));
 
     let verification;
     try {
-        try {
-            verification = await verifyAuthenticationResponse(verifyOptions);
-        } catch (error) {
-            console.error("Login Verify Error (First Attempt):", error.message);
-            // Fallback: try passing as 'credential' if library version mismatch
-            verification = await verifyAuthenticationResponse({
-                ...verifyOptions,
-                credential: authenticatorObj
-            });
-        }
-    } catch (finalError) {
-        console.error("Final Login Verify Error:", finalError);
-        return res.status(400).json({ error: finalError.message });
+        verification = await verifyAuthenticationResponse({
+            response: body,
+            expectedChallenge: challenge,
+            expectedOrigin: origin,
+            expectedRPID: [expectedRPID, 'localhost'],
+            authenticator,
+        });
+    } catch (error) {
+        console.error("Login Verify Error:", error.message);
+        return res.status(400).json({ error: error.message });
     }
 
     if (verification && verification.verified) {
