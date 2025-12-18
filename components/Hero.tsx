@@ -24,7 +24,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         {!imageError ? (
           <img
             src="/assets/profile.jpg"
-            alt="Harish Chavan"
+            alt="Harish Chavan (Hrchavan)"
             className="w-56 h-56 rounded-full border-4 border-gray-200 object-cover mb-6 shadow-lg mx-auto"
             onError={() => setImageError(true)}
           />
@@ -35,7 +35,10 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         )}
 
         <p className="text-xl md:text-2xl text-gray-600">Hi, I am</p>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-black mt-2 leading-tight flex flex-wrap justify-center gap-x-3 md:gap-x-4">
+        {/* Hidden H1 for SEO Crawlers */}
+        <h1 className="sr-only">Harish Chavan (Hrchavan)</h1>
+
+        <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-black mt-2 leading-tight flex flex-wrap justify-center gap-x-3 md:gap-x-4" aria-hidden="true">
           <span className="inline-block whitespace-nowrap">
             {firstName.split('').map((char, index) => (
               <span
@@ -58,7 +61,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               </span>
             ))}
           </span>
-        </h1>
+        </div>
         <p className="text-xl md:text-2xl text-gray-600 mt-4">
           Business Analytics Student
         </p>

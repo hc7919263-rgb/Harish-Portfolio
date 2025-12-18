@@ -11,7 +11,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <div className="max-w-screen-xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="text-center md:text-left">
                     <p className="text-gray-500 text-sm">
-                        © {new Date().getFullYear()} Harish Chavan. All rights reserved.
+                        © {new Date().getFullYear()} Harish Chavan (Hrchavan). All rights reserved.
                     </p>
                 </div>
 
