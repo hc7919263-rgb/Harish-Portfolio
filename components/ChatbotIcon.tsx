@@ -11,11 +11,11 @@ const ChatbotIcon: React.FC<ChatbotIconProps> = ({ onNavigate }) => {
             className="fixed bottom-6 right-6 z-50 group cursor-pointer"
         >
             {/* Thought Bubble */}
-            <div className="absolute bottom-full right-4 mb-4 opacity-0 group-hover:opacity-100 md:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
-                <div className="relative bg-white/80 backdrop-blur-md border border-white/20 px-4 py-2 rounded-2xl shadow-xl shadow-black/5 whitespace-nowrap animate-bounce-subtle">
-                    <span className="text-sm font-bold text-gray-800 tracking-tight">I am Analytica...</span>
+            <div className="absolute bottom-full right-4 mb-4 opacity-0 transition-all duration-500 transform translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 animate-fade-loop">
+                <div className="relative bg-white/90 backdrop-blur-md border border-white/20 px-4 py-2 rounded-2xl shadow-xl shadow-black/5 whitespace-nowrap">
+                    <span className="text-sm font-bold text-gray-800 tracking-tight">Ask me about Harish!</span>
                     {/* Bubble Tail */}
-                    <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white/80 backdrop-blur-md border-r border-b border-white/20 rotate-45"></div>
+                    <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white/90 backdrop-blur-md border-r border-b border-white/20 rotate-45"></div>
                 </div>
             </div>
 
@@ -30,12 +30,12 @@ const ChatbotIcon: React.FC<ChatbotIconProps> = ({ onNavigate }) => {
             </div>
 
             <style>{`
-                @keyframes bounce-subtle {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-5px); }
+                @keyframes fade-loop {
+                    0%, 2%, 20%, 100% { opacity: 0; transform: translateY(10px); }
+                    5%, 15% { opacity: 1; transform: translateY(0); }
                 }
-                .animate-bounce-subtle {
-                    animation: bounce-subtle 3s ease-in-out infinite;
+                .animate-fade-loop {
+                    animation: fade-loop 25s ease-in-out infinite;
                 }
             `}</style>
         </div>

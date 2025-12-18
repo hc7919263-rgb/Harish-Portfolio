@@ -288,7 +288,7 @@ const ChatbotPage: React.FC = () => {
                         {/* Empty/back button space if needed */}
                     </div>
                     <div className="text-center">
-                        <h3 className="font-bold text-black text-xl">Analytica - An Virtual Assistant</h3>
+                        <h3 className="font-bold text-black text-xl">Analytica - A Virtual Assistant</h3>
                     </div>
                     <div className="absolute right-6 flex items-center gap-2">
                         <button onClick={handleReset} className="p-2 transition-colors hover:opacity-80" title="Reset Chat">
