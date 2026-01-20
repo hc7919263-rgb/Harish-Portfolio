@@ -659,18 +659,23 @@ app.listen(PORT, () => {
 });
 
 // --- Keep-Alive Script (Prevent Render Cold Start) ---
-const url = `https://harish-portfolio-3fqm.onrender.com`;
+const urls = [
+    `https://harish-portfolio-3fqm.onrender.com`,
+    `https://orchestrix.onrender.com/home/workflows`
+];
 const interval = 600000; // 10 minutes
 
 function reloadWebsite() {
-    axios
-        .get(url)
-        .then((response) => {
-            console.log("Website reloaded to prevent cold start");
-        })
-        .catch((error) => {
-            console.error(`Keep-alive Error : ${error.message}`);
-        });
+    urls.forEach((url) => {
+        axios
+            .get(url)
+            .then((response) => {
+                console.log(`Website reloaded to prevent cold start: ${url}`);
+            })
+            .catch((error) => {
+                console.error(`Keep-alive Error for ${url}: ${error.message}`);
+            });
+    });
 }
 
 setInterval(reloadWebsite, interval);
