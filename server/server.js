@@ -661,7 +661,7 @@ app.listen(PORT, () => {
 // --- Keep-Alive Script (Prevent Render Cold Start) ---
 const urls = [
     `https://harish-portfolio-3fqm.onrender.com`,
-    `https://orchestrix.onrender.com/home/workflows`
+    `https://orchestrix.onrender.com/healthz`
 ];
 const interval = 600000; // 10 minutes
 
